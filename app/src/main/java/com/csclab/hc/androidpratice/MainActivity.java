@@ -52,13 +52,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onClick(View view) {
                 ipAdd = inputIP.getText().toString();
-                jumpToMainLayout();
+                jumpToCalculatorLayout();
             }
         });
     }
 
     //Function for Calculator Page Setup
-    public void jumpToMainLayout() {
+    public void jumpToCalculatorLayout() {
         setContentView(R.layout.activity_main);
 
         inputNumTxt1 = (EditText) findViewById(R.id.etNum1);
@@ -92,9 +92,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         num1 = Float.parseFloat(inputNumTxt1.getText().toString());
         num2 = Float.parseFloat(inputNumTxt2.getText().toString());
 
-        // defines the button that has been clicked and performs the corresponding operation
-        // write operation into oper, we will use it later for output
-        //TODO: caculate result
+        // caculate result
         switch (v.getId()) {
             case R.id.btnAdd:
                 oper = "+";
@@ -115,10 +113,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             default:
                 break;
         }
-        // HINT:Using log.d to check your answer is correct before implement page turning
+        // Using log.d to check
         Log.d("debug","ANS "+result);
-        //TODO: Pass the result String to jumpToResultLayout() and show the result at Result view
+        Log.d("Client","Client Send");
+        //Pass the result String to jumpToResultLayout() and show the result at Result view
         jumpToResultLayout(new String(num1 + " " + oper + " " + num2 + " = " + result));
+        //Send result to Server
+        Thread t = new thread();
+        t.start();
     }
 
     public void jumpToResultLayout(String resultStr){
@@ -137,10 +139,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             // prepare button listener for return button
             return_button.setOnClickListener(new View.OnClickListener(){
                 public void onClick(View v) {
-                    jumpToIPLayout();
+                    jumpToCalculatorLayout();
                 }
 
             });
+        }
+    }
+
+    //inner Thread class
+    class thread extends Thread{
+        public void run(){
+            try{
+                System.out.println("Client: Waiting to connect...");
+                int serverPort = 2000;
+
+                // Create socket connect server
+                Socket socket = new Socket(ipAdd, serverPort);
+                System.out.println("Connected!");
+
+                // Create stream communicate with server
+                OutputStream out = socket.getOutputStream();
+                String strToSend = "Hi I'm client";
+
+                byte[] sendStrByte = new byte[1024];
+                System.arraycopy(strToSend.getBytes(), 0, sendStrByte, 0, strToSend.length());
+                out.write(sendStrByte);
+
+            }catch (Exception e){
+                System.out.println("Error" + e.getMessage());
+            }
         }
     }
 }
