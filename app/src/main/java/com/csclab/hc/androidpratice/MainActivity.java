@@ -114,12 +114,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
         }
         // Using log.d to check
-        Log.d("debug","ANS "+result);
+        Log.d("debug","MSG "+num1+oper+num2+"="+result);
         Log.d("Client","Client Send");
         //Pass the result String to jumpToResultLayout() and show the result at Result view
         jumpToResultLayout(new String(num1 + " " + oper + " " + num2 + " = " + result));
         //Send result to Server
-        Thread t = new thread();
+        Thread t = new thread(num1+oper+num2+"="+result);
         t.start();
     }
 
@@ -148,6 +148,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     //inner Thread class
     class thread extends Thread{
+        String message;
+        byte[] sendStrByte;
+        public thread(String s){
+            message=s;
+        }
         public void run(){
             try{
                 System.out.println("Client: Waiting to connect...");
@@ -159,15 +164,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 // Create stream communicate with server
                 OutputStream out = socket.getOutputStream();
-                String strToSend = "Hi I'm client";
+                String strToSend = message;
 
-                byte[] sendStrByte = new byte[1024];
+               sendStrByte = message.getBytes();
                 System.arraycopy(strToSend.getBytes(), 0, sendStrByte, 0, strToSend.length());
                 out.write(sendStrByte);
+                out.flush();
+                out.close();
+                System.out.println("Sent message!");
 
             }catch (Exception e){
                 System.out.println("Error" + e.getMessage());
             }
         }
+
     }
 }
